@@ -1,176 +1,190 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
- <head> 
-  <meta charset="utf-8"> 
-  <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]--> 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-  <meta name="generator" content="Asciidoctor 1.5.3"> 
-  <title>Migrating from Maven to Gradle</title> 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css"> 
-  <link rel="stylesheet" href="./coderay-asciidoctor.css"> 
-  <link rel="stylesheet" href="https://guides.gradle.org/asciidoctor.css"> 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,400,700|Source+Code+Pro:500"> 
-  <link rel="apple-touch-icon" sizes="180x180" href="https://guides.gradle.org/icon/apple-touch-icon.png"> 
-  <link rel="icon" type="image/png" href="https://guides.gradle.org/icon/favicon-32x32.png" sizes="32x32"> 
-  <link rel="icon" type="image/png" href="https://guides.gradle.org/icon/favicon-16x16.png" sizes="16x16"> 
-  <link rel="manifest" href="https://guides.gradle.org/icon/manifest.json"> 
-  <link rel="mask-icon" href="https://guides.gradle.org/icon/safari-pinned-tab.svg" color="#5bbad5"> 
-  <link rel="shortcut icon" href="https://guides.gradle.org/icon/favicon.ico"> 
-  <meta name="apple-mobile-web-app-title" content="Performance"> 
-  <meta name="application-name" content="Performance"> 
-  <meta name="msapplication-config" content="https://guides.gradle.org/icon/browserconfig.xml"> 
-  <meta name="theme-color" content="#ffffff"> 
-  <script defer src="https://guides.gradle.org/js/set-time-to-complete-text.js"></script> 
-  <script>
+<head>
+<meta charset="utf-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.3">
+<meta name="author" content="Peter Ledbrook">
+<title>Migrating from Maven to Gradle</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="./coderay-asciidoctor.css">
+<link rel="stylesheet" href="https://guides.gradle.org/asciidoctor.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,400,700|Source+Code+Pro:500">
+<link rel="apple-touch-icon" sizes="180x180" href="https://guides.gradle.org/icon/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="https://guides.gradle.org/icon/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="https://guides.gradle.org/icon/favicon-16x16.png" sizes="16x16">
+<link rel="manifest" href="https://guides.gradle.org/icon/manifest.json">
+<link rel="mask-icon" href="https://guides.gradle.org/icon/safari-pinned-tab.svg" color="#5bbad5">
+<link rel="shortcut icon" href="https://guides.gradle.org/icon/favicon.ico">
+<meta name="apple-mobile-web-app-title" content="Performance">
+<meta name="application-name" content="Performance">
+<meta name="msapplication-config" content="https://guides.gradle.org/icon/browserconfig.xml">
+<meta name="theme-color" content="#ffffff">
+<script defer src="https://guides.gradle.org/js/set-time-to-complete-text.js"></script>
+<script>
   (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
   ga("create", "UA-4207603-1", "auto");
   ga("send", "pageview");
-</script> 
- </head> 
- <body class="article toc2 toc-right"> 
-  <div id="header">
-   <div style="padding-top: 10px;">
-    <a href="https://guides.gradle.org"><img src="http://guides.gradle.org/gradle-guides.svg" alt=""></a>
-   </div> 
-   <h1>Migrating from Maven to Gradle</h1> 
-   <div id="toc" class="toc2"> 
-    <div id="toctitle">
-     Table of Contents
-    </div> 
-    <ul class="sectlevel1"> 
-     <li><a href="#understanding_the_differences">1. Understanding the differences</a></li> 
-     <li><a href="#build_validation">2. Build validation</a></li> 
-     <li><a href="#automated_conversion">3. Automated conversion</a></li> 
-     <li><a href="#potential_extra_steps">4. Potential extra steps</a> 
-      <ul class="sectlevel2"> 
-       <li><a href="#bills_of_materials_boms">4.1. Bills of Materials (BOMs)</a></li> 
-       <li><a href="#provided_scope_and_optional_dependencies">4.2. Provided scope and optional dependencies</a></li> 
-      </ul> </li> 
-     <li><a href="#maven_profiles_and_properties">5. Maven profiles and properties</a></li> 
-     <li><a href="#resource_filtering">6. Resource filtering</a></li> 
-     <li><a href="#integration_tests">7. Integration tests</a></li> 
-     <li><a href="#common_plugins">8. Common plugins</a> 
-      <ul class="sectlevel2"> 
-       <li><a href="#ant_goals">8.1. Ant goals</a></li> 
-      </ul> </li> 
-     <li><a href="#plugins_you_don_t_need">9. Plugins you don’t need</a></li> 
-     <li><a href="#uncommon_and_custom_plugins">10. Uncommon and custom plugins</a></li> 
-     <li><a href="#conclusion">11. Conclusion</a></li> 
-    </ul> 
-   </div> 
-  </div> 
-  <div id="content"> 
-   <div id="preamble"> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p><a href="https://maven.apache.org">Apache Maven</a> is a build tool for Java and other JVM-based projects that’s in widespread use, and so people that want to use Gradle often have to migrate an existing Maven build. This guide will help with such a migration by explaining the differences and similarities between the two tools' models and providing steps that you can follow to ease the process. You will also learn how to overcome some of the obstacles that arise from the differences.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="understanding_the_differences"><a class="anchor" href="#understanding_the_differences"></a>1. Understanding the differences</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>Gradle and Maven have fundamentally different views on how to build a project. Gradle is based on a graph of task dependencies, where the tasks do the work. Maven uses a model of fixed, linear phases to which you can attach goals (the things that do the work). Despite this, migrations can be surprisingly easy because Gradle follows many of the same conventions as Maven and dependency management works in a similar way.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>For a more complete feature comparison, please consult the <a href="https://gradle.org/maven-vs-gradle">Maven vs Gradle Feature Comparison Table</a>.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Before you start, it’s useful to have some idea of how much work a migration is likely to entail. Here’s a list of Maven features that may make the process more difficult:</p> 
-     </div> 
-     <div class="ulist"> 
-      <ul> 
-       <li> <p>Bills of Material (BOMs)</p> </li> 
-       <li> <p>"import" and "provided" scopes</p> </li> 
-       <li> <p>Optional dependencies</p> </li> 
-       <li> <p>Integration tests</p> </li> 
-       <li> <p>Custom configurations</p> </li> 
-       <li> <p>Less common Maven plugins</p> </li> 
-       <li> <p>Custom plugins</p> </li> 
-      </ul> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Some of these can be handled without too much trouble and we’ll be discussing potential solutions later. Solutions that are often much more straightforward and easier to be used and maintained by the developers.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Once you’ve decided to go ahead with the migration, what should you do next? The best starting point is setting up a mechanism to validate your new build.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="build_validation"><a class="anchor" href="#build_validation"></a>2. Build validation</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>Just like the software you’re trying to build, the build itself has expected outputs and behavior. A migration introduces the potential for those to change, either in big ways or in more subtle ones. And how do you check that your software is working as expected? Via tests (we hope).</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>A build isn’t usually difficult to test, but you do want to make sure all the same artifacts produced by the Maven build are also created by the Gradle build. Ideally, you should test for all potential inputs to the build as well, such as system properties and environment.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>If you want to learn more about testing your builds, we will be publishing a separate guide and link at some point in the future.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Once you’re able to validate the Gradle build, you can start the migration. The first step is easy as Gradle provides a feature to automatically convert a Maven build to Gradle.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="automated_conversion"><a class="anchor" href="#automated_conversion"></a>3. Automated conversion</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>Not only will the Gradle <code>init</code> task allow you to create a new skeleton project, but it will also automatically convert an existing Maven one to Gradle. All you have to do is run the command</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre>$ gradle init</pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>from the root project directory and let Gradle do its thing. That basically consists of parsing the existing POMs and generating corresponding Gradle build files plus a <code>settings.gradle</code> file if it’s a multi-project build.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>You’ll find that the new Gradle build includes any custom repositories specified in the POM, your external and inter-project dependencies, the appropriate plugins (any of <code>maven</code>, <code>java</code>, and <code>war</code>), and more. See the user guide for <a href="https://docs.gradle.org/3.4/userguide/build_init_plugin.html#sec:pom_maven_conversion_">a complete list of the automatic conversion features</a>.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>One thing to bear in mind is that assemblies are not automatically converted. They aren’t necessarily problematic to convert, but you will need to do some manual work.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>If you’re lucky and don’t have many plugins or much in the way of customisation in your Maven build, you can simply run</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre>$ gradle build</pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>once the migration has completed. This will run the tests and produce the required artifacts without any extra intervention on your part. Of course, a big reason to switch to Gradle is because it has a richer and more powerful model, so many of you will already have extensively customized your Maven build. So we’ll look at some common obstacles and their solutions next.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="potential_extra_steps"><a class="anchor" href="#potential_extra_steps"></a>4. Potential extra steps</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>There are many plugins and hence many different ways to customize a Maven build and we can’t cover them all. But here are some of the more common Maven techniques and plugins that require a little extra work to migrate to Gradle.</p> 
-     </div> 
-     <div class="sect2"> 
-      <h3 id="bills_of_materials_boms"><a class="anchor" href="#bills_of_materials_boms"></a>4.1. Bills of Materials (BOMs)</h3> 
-      <div class="paragraph"> 
-       <p>Maven allows you specify a list of dependencies in a separate POM inside tags. This special type of POM (a BOM) can then be imported into other POMs so that you have consistent library names and versions across all your projects.</p> 
-      </div> 
-      <div class="paragraph"> 
-       <p>Gradle does not support BOMs directly, but you can make use of them in your Gradle build files by applying the <a href="https://github.com/nebula-plugins/nebula-dependency-recommender-plugin">nebula-dependency-recommender-plugin</a>.</p> 
-      </div> 
-      <div class="paragraph"> 
-       <p>Once in place, you’ll be able to import a BOM into your build file using the following syntax:</p> 
-      </div> 
-      <div class="listingblock"> 
-       <div class="content"> 
-        <pre class="CodeRay highlight"><code data-lang="groovy">dependencyManagement {
+</script>
+</head>
+<body class="article toc2 toc-right">
+<div id="header"><div style="padding-top: 10px;"><a href="https://guides.gradle.org"><img src="http://guides.gradle.org/gradle-guides.svg" alt=""></a></div><h1>Migrating from Maven to Gradle</h1>
+<div class="details">
+<span id="author" class="author">Peter Ledbrook</span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#understanding_the_differences">1. Understanding the differences</a></li>
+<li><a href="#build_validation">2. Build validation</a></li>
+<li><a href="#automated_conversion">3. Automated conversion</a></li>
+<li><a href="#potential_extra_steps">4. Potential extra steps</a>
+<ul class="sectlevel2">
+<li><a href="#bills_of_materials_boms">4.1. Bills of Materials (BOMs)</a></li>
+<li><a href="#provided_scope_and_optional_dependencies">4.2. Provided scope and optional dependencies</a></li>
+</ul>
+</li>
+<li><a href="#maven_profiles_and_properties">5. Maven profiles and properties</a></li>
+<li><a href="#resource_filtering">6. Resource filtering</a></li>
+<li><a href="#integration_tests">7. Integration tests</a></li>
+<li><a href="#common_plugins">8. Common plugins</a>
+<ul class="sectlevel2">
+<li><a href="#ant_goals">8.1. Ant goals</a></li>
+</ul>
+</li>
+<li><a href="#plugins_you_don_t_need">9. Plugins you don&#8217;t need</a></li>
+<li><a href="#uncommon_and_custom_plugins">10. Uncommon and custom plugins</a></li>
+<li><a href="#conclusion">11. Conclusion</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://maven.apache.org">Apache Maven</a> is a build tool for Java and other JVM-based projects that&#8217;s in widespread use, and so people that want to use Gradle often have to migrate an existing Maven build. This guide will help with such a migration by explaining the differences and similarities between the two tools' models and providing steps that you can follow to ease the process. You will also learn how to overcome some of the obstacles that arise from the differences.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="understanding_the_differences"><a class="anchor" href="#understanding_the_differences"></a>1. Understanding the differences</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Gradle and Maven have fundamentally different views on how to build a project. Gradle is based on a graph of task dependencies, where the tasks do the work. Maven uses a model of fixed, linear phases to which you can attach goals (the things that do the work). Despite this, migrations can be surprisingly easy because Gradle follows many of the same conventions as Maven and dependency management works in a similar way.</p>
+</div>
+<div class="paragraph">
+<p>For a more complete feature comparison, please consult the <a href="https://gradle.org/maven-vs-gradle">Maven vs Gradle Feature Comparison Table</a>.</p>
+</div>
+<div class="paragraph">
+<p>Before you start, it&#8217;s useful to have some idea of how much work a migration is likely to entail. Here&#8217;s a list of Maven features that may make the process more difficult:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Bills of Material (BOMs)</p>
+</li>
+<li>
+<p>"import" and "provided" scopes</p>
+</li>
+<li>
+<p>Optional dependencies</p>
+</li>
+<li>
+<p>Integration tests</p>
+</li>
+<li>
+<p>Custom configurations</p>
+</li>
+<li>
+<p>Less common Maven plugins</p>
+</li>
+<li>
+<p>Custom plugins</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Some of these can be handled without too much trouble and we&#8217;ll be discussing potential solutions later. Solutions that are often much more straightforward and easier to be used and maintained by the developers.</p>
+</div>
+<div class="paragraph">
+<p>Once you&#8217;ve decided to go ahead with the migration, what should you do next? The best starting point is setting up a mechanism to validate your new build.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="build_validation"><a class="anchor" href="#build_validation"></a>2. Build validation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Just like the software you&#8217;re trying to build, the build itself has expected outputs and behavior. A migration introduces the potential for those to change, either in big ways or in more subtle ones. And how do you check that your software is working as expected? Via tests (we hope).</p>
+</div>
+<div class="paragraph">
+<p>A build isn&#8217;t usually difficult to test, but you do want to make sure all the same artifacts produced by the Maven build are also created by the Gradle build. Ideally, you should test for all potential inputs to the build as well, such as system properties and environment.</p>
+</div>
+<div class="paragraph">
+<p>If you want to learn more about testing your builds, we will be publishing a separate guide and link at some point in the future.</p>
+</div>
+<div class="paragraph">
+<p>Once you&#8217;re able to validate the Gradle build, you can start the migration. The first step is easy as Gradle provides a feature to automatically convert a Maven build to Gradle.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="automated_conversion"><a class="anchor" href="#automated_conversion"></a>3. Automated conversion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Not only will the Gradle <code>init</code> task allow you to create a new skeleton project, but it will also automatically convert an existing Maven one to Gradle. All you have to do is run the command</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ gradle init</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>from the root project directory and let Gradle do its thing. That basically consists of parsing the existing POMs and generating corresponding Gradle build files plus a <code>settings.gradle</code> file if it&#8217;s a multi-project build.</p>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll find that the new Gradle build includes any custom repositories specified in the POM, your external and inter-project dependencies, the appropriate plugins (any of <code>maven</code>, <code>java</code>, and <code>war</code>), and more. See the user guide for <a href="https://docs.gradle.org/3.5/userguide/build_init_plugin.html#sec:pom_maven_conversion_">a complete list of the automatic conversion features</a>.</p>
+</div>
+<div class="paragraph">
+<p>One thing to bear in mind is that assemblies are not automatically converted. They aren&#8217;t necessarily problematic to convert, but you will need to do some manual work.</p>
+</div>
+<div class="paragraph">
+<p>If you&#8217;re lucky and don&#8217;t have many plugins or much in the way of customisation in your Maven build, you can simply run</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ gradle build</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>once the migration has completed. This will run the tests and produce the required artifacts without any extra intervention on your part. Of course, a big reason to switch to Gradle is because it has a richer and more powerful model, so many of you will already have extensively customized your Maven build. So we&#8217;ll look at some common obstacles and their solutions next.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="potential_extra_steps"><a class="anchor" href="#potential_extra_steps"></a>4. Potential extra steps</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are many plugins and hence many different ways to customize a Maven build and we can&#8217;t cover them all. But here are some of the more common Maven techniques and plugins that require a little extra work to migrate to Gradle.</p>
+</div>
+<div class="sect2">
+<h3 id="bills_of_materials_boms"><a class="anchor" href="#bills_of_materials_boms"></a>4.1. Bills of Materials (BOMs)</h3>
+<div class="paragraph">
+<p>Maven allows you specify a list of dependencies in a separate POM inside tags. This special type of POM (a BOM) can then be imported into other POMs so that you have consistent library names and versions across all your projects.</p>
+</div>
+<div class="paragraph">
+<p>Gradle does not support BOMs directly, but you can make use of them in your Gradle build files by applying the <a href="https://github.com/nebula-plugins/nebula-dependency-recommender-plugin">nebula-dependency-recommender-plugin</a>.</p>
+</div>
+<div class="paragraph">
+<p>Once in place, you&#8217;ll be able to import a BOM into your build file using the following syntax:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">dependencyManagement {
     imports {
         mavenBom <span class="string"><span class="delimiter">'</span><span class="content">io.spring.platform:platform-bom:1.0.1.RELEASE</span><span class="delimiter">'</span></span>
     }
@@ -178,24 +192,24 @@
 
 dependencies {
    compile <span class="string"><span class="delimiter">'</span><span class="content">org.springframework.integration:spring-integration-core</span><span class="delimiter">'</span></span>
-}</code></pre> 
-       </div> 
-      </div> 
-      <div class="paragraph"> 
-       <p><strong>Note:</strong> Gradle doesn’t support the <code>import</code> scope in the POMs of dependencies, so you’ll have to manually import them using the above syntax.</p> 
-      </div> 
-     </div> 
-     <div class="sect2"> 
-      <h3 id="provided_scope_and_optional_dependencies"><a class="anchor" href="#provided_scope_and_optional_dependencies"></a>4.2. Provided scope and optional dependencies</h3> 
-      <div class="paragraph"> 
-       <p>Gradle has a lot of flexibility in the way that dependencies are managed, particularly through configurations. However, it doesn’t have a scope named <code>provided</code> out of the box unless you use the <code>war</code> plugin. The same basic behavior can be had from the <a href="https://blog.gradle.org/introducing-compile-only-dependencies">compileOnly</a> configuration added in Gradle 2.12.</p> 
-      </div> 
-      <div class="paragraph"> 
-       <p>If you need optional-like behavior or you’re using an older version of Gradle than 2.12, it is very easy to model these concepts in Gradle and various members of the community have produced plugins that do just that. Two well-used ones are Netflix’s Nebula <a href="https://plugins.gradle.org/plugin/nebula.provided-base">provided-base</a> and <a href="https://plugins.gradle.org/plugin/nebula.optional-base">optional-base</a> plugins. You can apply and use them like this:</p> 
-      </div> 
-      <div class="listingblock"> 
-       <div class="content"> 
-        <pre class="CodeRay highlight"><code data-lang="groovy">plugins {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Note:</strong> Gradle doesn&#8217;t support the <code>import</code> scope in the POMs of dependencies, so you&#8217;ll have to manually import them using the above syntax.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="provided_scope_and_optional_dependencies"><a class="anchor" href="#provided_scope_and_optional_dependencies"></a>4.2. Provided scope and optional dependencies</h3>
+<div class="paragraph">
+<p>Gradle has a lot of flexibility in the way that dependencies are managed, particularly through configurations. However, it doesn&#8217;t have a scope named <code>provided</code> out of the box unless you use the <code>war</code> plugin. The same basic behavior can be had from the <a href="https://blog.gradle.org/introducing-compile-only-dependencies">compileOnly</a> configuration added in Gradle 2.12.</p>
+</div>
+<div class="paragraph">
+<p>If you need optional-like behavior or you&#8217;re using an older version of Gradle than 2.12, it is very easy to model these concepts in Gradle and various members of the community have produced plugins that do just that. Two well-used ones are Netflix&#8217;s Nebula <a href="https://plugins.gradle.org/plugin/nebula.provided-base">provided-base</a> and <a href="https://plugins.gradle.org/plugin/nebula.optional-base">optional-base</a> plugins. You can apply and use them like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">plugins {
     id <span class="string"><span class="delimiter">'</span><span class="content">nebula.provided-base</span><span class="delimiter">'</span></span> version <span class="string"><span class="delimiter">'</span><span class="content">2.2.2</span><span class="delimiter">'</span></span>
     id <span class="string"><span class="delimiter">'</span><span class="content">nebula.optional-base</span><span class="delimiter">'</span></span> version <span class="string"><span class="delimiter">'</span><span class="content">2.2.2</span><span class="delimiter">'</span></span>
 }
@@ -205,116 +219,122 @@ dependencies {
     provided <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">version</span>: <span class="string"><span class="delimiter">'</span><span class="content">1.2.17</span><span class="delimiter">'</span></span>
     compile <span class="string"><span class="delimiter">'</span><span class="content">org.apache.commons:commons-lang3:3.3.2</span><span class="delimiter">'</span></span>, optional
     compile <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">version</span>: <span class="string"><span class="delimiter">'</span><span class="content">1.2.17</span><span class="delimiter">'</span></span>, optional
-}</code></pre> 
-       </div> 
-      </div> 
-      <div class="paragraph"> 
-       <p>They also work with the new, preferred publishing mechanism, which is something that you would have to handle yourself if you wanted to implement your own configurations.</p> 
-      </div> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="maven_profiles_and_properties"><a class="anchor" href="#maven_profiles_and_properties"></a>5. Maven profiles and properties</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>Maven allows you parameterize builds using properties of various sorts. Some are read-only properties of the project model, others are user-defined in the POM. It even allows you to treat system properties as project properties.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Gradle has a similar system of project properties, although it differentiates between those and system properties. You can, for example, define properties in:</p> 
-     </div> 
-     <div class="ulist"> 
-      <ul> 
-       <li> <p>the build file</p> </li> 
-       <li> <p>a <code>gradle.properties</code> file in the root project directory</p> </li> 
-       <li> <p>a <code>gradle.properties</code> file in the <code>$HOME/.gradle</code> directory</p> </li> 
-      </ul> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Those aren’t the only options, so if you are interested in finding out more about how and where you can define properties, <a href="https://docs.gradle.org/3.4/userguide/build_environment.html">check out the user guide</a>. Unlike with Maven, we recommend using camel case for your property names rather than dot-separated words.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>One important piece of behavior you need to be aware of is what happens when the same property is defined in both the build file and one of the external properties files: the build file value takes precedence. Always. Fortunately, you can mimic the concept of profiles to provide overridable default values.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Which brings us on to Maven profiles. These are a way to enable and disable different configurations based on environment, target platform, or any other similar factor. Logically, they are nothing more than limited ‘if' statements. And since Gradle has much more powerful ways to declare conditions, it does not need &nbsp;to have formal support for profiles (except in the POMs of dependencies). You can easily get the same behavior by combining conditions with secondary build files, as you’ll see next.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Let’s say you have different deployment settings depending on environment: local development (the default), a test environment, and production. To add profile-like behavior, first create build files for each environment in the project root: <code>profile-default.gradle</code>, <code>profile-test.gradle</code>, and <code>profile-prod.gradle</code>. Next, add a condition similar to the following to the main build file:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">if</span> (!hasProperty(<span class="string"><span class="delimiter">'</span><span class="content">buildProfile</span><span class="delimiter">'</span></span>)) ext.buildProfile = <span class="string"><span class="delimiter">'</span><span class="content">default</span><span class="delimiter">'</span></span>
-apply <span class="key">from</span>: <span class="string"><span class="delimiter">"</span><span class="content">profile-</span><span class="inline"><span class="inline-delimiter">${</span>buildProfile<span class="inline-delimiter">}</span></span><span class="content">.gradle</span><span class="delimiter">"</span></span></code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>All you have to do then is put the environment-specific configuration, such as project properties, dependencies, etc., in the corresponding build file. To activate a particular profile, you can just pass in the relevant project property on the command line:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre>$ gradle -PbuildProfile=test build</pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Or you can set the project property another way. It’s up to you. And those conditions don’t just have to check project properties. You could check environment variables, the JDK version, the OS the build is running on, and anything else you can imagine.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>One thing to bear in mind is that high level ‘if' statements make builds harder to understand and maintain, similar to the way they complicate Object-Oriented code. The same applies to profiles. Gradle offers you many better ways to avoid the extensive use of profiles that Maven often requires, for example by offering variants.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>For a lengthier discussion on working with Maven profiles in Gradle, look no further than <a href="http://gradle.org/feature-spotlight-gradles-support-maven-pom-profiles">this article</a> by Benjamin Muschko.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="resource_filtering"><a class="anchor" href="#resource_filtering"></a>6. Resource filtering</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>Maven has a phase called <code>process-resources</code> that has the goal <code>resources:resources</code> bound to it by default. This gives the build author an opportunity to perform variable substitution on various files, such as web resources, packaged properties files, etc.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>The Java plugin for Gradle provides a <code>processResources</code> task to do the same thing. Here’s an example configuration:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="groovy">processResources {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>They also work with the new, preferred publishing mechanism, which is something that you would have to handle yourself if you wanted to implement your own configurations.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="maven_profiles_and_properties"><a class="anchor" href="#maven_profiles_and_properties"></a>5. Maven profiles and properties</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Maven allows you parameterize builds using properties of various sorts. Some are read-only properties of the project model, others are user-defined in the POM. It even allows you to treat system properties as project properties.</p>
+</div>
+<div class="paragraph">
+<p>Gradle has a similar system of project properties, although it differentiates between those and system properties. You can, for example, define properties in:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the build file</p>
+</li>
+<li>
+<p>a <code>gradle.properties</code> file in the root project directory</p>
+</li>
+<li>
+<p>a <code>gradle.properties</code> file in the <code>$HOME/.gradle</code> directory</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Those aren&#8217;t the only options, so if you are interested in finding out more about how and where you can define properties, <a href="https://docs.gradle.org/3.5/userguide/build_environment.html">check out the user guide</a>. Unlike with Maven, we recommend using camel case for your property names rather than dot-separated words.</p>
+</div>
+<div class="paragraph">
+<p>One important piece of behavior you need to be aware of is what happens when the same property is defined in both the build file and one of the external properties files: the build file value takes precedence. Always. Fortunately, you can mimic the concept of profiles to provide overridable default values.</p>
+</div>
+<div class="paragraph">
+<p>Which brings us on to Maven profiles. These are a way to enable and disable different configurations based on environment, target platform, or any other similar factor. Logically, they are nothing more than limited ‘if' statements. And since Gradle has much more powerful ways to declare conditions, it does not need  to have formal support for profiles (except in the POMs of dependencies). You can easily get the same behavior by combining conditions with secondary build files, as you&#8217;ll see next.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s say you have different deployment settings depending on environment: local development (the default), a test environment, and production. To add profile-like behavior, first create build files for each environment in the project root: <code>profile-default.gradle</code>, <code>profile-test.gradle</code>, and <code>profile-prod.gradle</code>. Next, add a condition similar to the following to the main build file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">if</span> (!hasProperty(<span class="string"><span class="delimiter">'</span><span class="content">buildProfile</span><span class="delimiter">'</span></span>)) ext.buildProfile = <span class="string"><span class="delimiter">'</span><span class="content">default</span><span class="delimiter">'</span></span>
+apply <span class="key">from</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">profile-</span><span class="inline"><span class="inline-delimiter">${</span>buildProfile<span class="inline-delimiter">}</span></span><span class="content">.gradle</span><span class="delimiter">&quot;</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All you have to do then is put the environment-specific configuration, such as project properties, dependencies, etc., in the corresponding build file. To activate a particular profile, you can just pass in the relevant project property on the command line:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ gradle -PbuildProfile=test build</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or you can set the project property another way. It&#8217;s up to you. And those conditions don&#8217;t just have to check project properties. You could check environment variables, the JDK version, the OS the build is running on, and anything else you can imagine.</p>
+</div>
+<div class="paragraph">
+<p>One thing to bear in mind is that high level ‘if' statements make builds harder to understand and maintain, similar to the way they complicate Object-Oriented code. The same applies to profiles. Gradle offers you many better ways to avoid the extensive use of profiles that Maven often requires, for example by offering variants.</p>
+</div>
+<div class="paragraph">
+<p>For a lengthier discussion on working with Maven profiles in Gradle, look no further than <a href="http://gradle.org/feature-spotlight-gradles-support-maven-pom-profiles">this article</a> by Benjamin Muschko.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="resource_filtering"><a class="anchor" href="#resource_filtering"></a>6. Resource filtering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Maven has a phase called <code>process-resources</code> that has the goal <code>resources:resources</code> bound to it by default. This gives the build author an opportunity to perform variable substitution on various files, such as web resources, packaged properties files, etc.</p>
+</div>
+<div class="paragraph">
+<p>The Java plugin for Gradle provides a <code>processResources</code> task to do the same thing. Here&#8217;s an example configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">processResources {
     expand(<span class="key">version</span>: version, <span class="key">buildNumber</span>: currentBuildNumber)
-}</code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>So the left hand side of each colon is the token name and the right hand side is a project property. This variable substitution will apply to all your resource files (the ones under <code>src/main/resources</code> usually).</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Gradle has other powerful ways for property processing. You can hook in your own filter via a closure that allows you to process the content line by line, or you can add your own <code>FilterReader</code> implementation. For more details, see the documentation for the <a href="https://docs.gradle.org/3.4/javadoc/org/gradle/api/file/ContentFilterable.html">ContentFilterable</a> interface which all copy (and archive) tasks, including <code>processResources</code>, implement.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="integration_tests"><a class="anchor" href="#integration_tests"></a>7. Integration tests</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>Although unit tests are very useful, they can’t ensure that an application or library works as a whole. It’s easy for bugs to appear in the interactions between objects and their interactions with the environment. That’s why many projects incorporate some form of higher level testing, sometimes termed integration, functional or acceptance testing.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Maven supports these types of test by providing an extra set of phases: <code>pre-integration-test</code>, <code>integration-test</code>, <code>post-integration-test</code>, and <code>verify</code>. It also uses the Failsafe plugin rather than Surefire so that failed integration tests don’t automatically fail the build (because you may need to clean up resources, such as a running application server).</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Another factor to consider is where you keep your integration test classes. The default approach is to mix them with your unit test classes, but this is less than ideal. A common alternative is to use profiles so that you can keep the two types of test separate.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>So how should you approach migrating such a setup to Gradle? Forget plugins: source sets are your friends in this situation. A standard Java project already has two source sets for your main classes and your unit tests. Why not add an extra one for integration tests? Or even more than one for different types of integration test? Say low-level tests against a live database and higher level tests with something like FitNesse.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>By declaring a new source set, Gradle automatically sets you up with corresponding configurations (<code>[sourceSet]Compile</code> and <code>[sourceSet]Runtime</code>) as well as compilation tasks (<code>compile[SourceSet][Lang]</code>) and a resource processing task (<code>process[SourceSet]Resources</code>). All you need to do is add a task to run the tests and ensure that the classpaths are all set up. You might also want to add tasks for starting/stopping a database or application server if your tests require something like that.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Let’s now take a look at an example so you can see what’s involved in practice:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="groovy">sourceSets {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>So the left hand side of each colon is the token name and the right hand side is a project property. This variable substitution will apply to all your resource files (the ones under <code>src/main/resources</code> usually).</p>
+</div>
+<div class="paragraph">
+<p>Gradle has other powerful ways for property processing. You can hook in your own filter via a closure that allows you to process the content line by line, or you can add your own <code>FilterReader</code> implementation. For more details, see the documentation for the <a href="https://docs.gradle.org/3.5/javadoc/org/gradle/api/file/ContentFilterable.html">ContentFilterable</a> interface which all copy (and archive) tasks, including <code>processResources</code>, implement.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="integration_tests"><a class="anchor" href="#integration_tests"></a>7. Integration tests</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Although unit tests are very useful, they can&#8217;t ensure that an application or library works as a whole. It&#8217;s easy for bugs to appear in the interactions between objects and their interactions with the environment. That&#8217;s why many projects incorporate some form of higher level testing, sometimes termed integration, functional or acceptance testing.</p>
+</div>
+<div class="paragraph">
+<p>Maven supports these types of test by providing an extra set of phases: <code>pre-integration-test</code>, <code>integration-test</code>, <code>post-integration-test</code>, and <code>verify</code>. It also uses the Failsafe plugin rather than Surefire so that failed integration tests don&#8217;t automatically fail the build (because you may need to clean up resources, such as a running application server).</p>
+</div>
+<div class="paragraph">
+<p>Another factor to consider is where you keep your integration test classes. The default approach is to mix them with your unit test classes, but this is less than ideal. A common alternative is to use profiles so that you can keep the two types of test separate.</p>
+</div>
+<div class="paragraph">
+<p>So how should you approach migrating such a setup to Gradle? Forget plugins: source sets are your friends in this situation. A standard Java project already has two source sets for your main classes and your unit tests. Why not add an extra one for integration tests? Or even more than one for different types of integration test? Say low-level tests against a live database and higher level tests with something like FitNesse.</p>
+</div>
+<div class="paragraph">
+<p>By declaring a new source set, Gradle automatically sets you up with corresponding configurations (<code>[sourceSet]Compile</code> and <code>[sourceSet]Runtime</code>) as well as compilation tasks (<code>compile[SourceSet][Lang]</code>) and a resource processing task (<code>process[SourceSet]Resources</code>). All you need to do is add a task to run the tests and ensure that the classpaths are all set up. You might also want to add tasks for starting/stopping a database or application server if your tests require something like that.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s now take a look at an example so you can see what&#8217;s involved in practice:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">sourceSets {
     integTest {
         compileClasspath += main.output + test.output
         runtimeClasspath += main.output + test.output
@@ -323,69 +343,79 @@ apply <span class="key">from</span>: <span class="string"><span class="delimiter
 configurations {
     integTestCompile.extendsFrom testCompile
     integTestRuntime.extendsFrom testRuntime
-}</code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>In the above example, I create a new source set called <code>integTest</code>. I also make sure that the application or library classes, as well as their dependencies, are included on the classpath when compiling the integration tests.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Your integration tests will probably use some third party libraries of their own, so you’ll want to add those the compilation classpath too. That’s done in the normal way in the <code>dependencies</code> block:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="groovy">dependencies {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the above example, I create a new source set called <code>integTest</code>. I also make sure that the application or library classes, as well as their dependencies, are included on the classpath when compiling the integration tests.</p>
+</div>
+<div class="paragraph">
+<p>Your integration tests will probably use some third party libraries of their own, so you&#8217;ll want to add those the compilation classpath too. That&#8217;s done in the normal way in the <code>dependencies</code> block:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">dependencies {
    <span class="comment">// ...</span>
    integTestCompile <span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all:2.4.3</span><span class="delimiter">'</span></span>
    integTestCompile <span class="string"><span class="delimiter">'</span><span class="content">org.spockframework:spock-core:0.7-groovy-2.0</span><span class="delimiter">'</span></span>, {
       exclude <span class="key">module</span>: <span class="string"><span class="delimiter">'</span><span class="content">groovy-all</span><span class="delimiter">'</span></span>
    }
-}</code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>The integration tests will now compile, but there is currently no way to run them. That’s where the custom <code>Test</code> task comes in:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="groovy">task integTest(<span class="key">type</span>: Test) {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The integration tests will now compile, but there is currently no way to run them. That&#8217;s where the custom <code>Test</code> task comes in:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">task integTest(<span class="key">type</span>: Test) {
     dependsOn startApp
     finalizedBy stopApp
     testClassesDir = sourceSets.integTest.output.classesDir
     classpath = sourceSets.integTest.runtimeClasspath
     mustRunAfter test
-}</code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>In the above example, I’m assuming that the integration tests run against an application server that needs to be started and shut down at the appropriate times. You can learn more about how and what to configure on the <code>Test</code> task in Gradle’s <a href="https://docs.gradle.org/3.4/dsl/org.gradle.api.tasks.testing.Test.html">DSL Reference</a>.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>All that’s left to do at this point is incorporate the <code>integTest</code> task into your task graph, for example by having <code>build</code> depend on it. It’s really up to you how you fit it into the build. If you want to support other test types, just rinse and repeat.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="common_plugins"><a class="anchor" href="#common_plugins"></a>8. Common plugins</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>Maven and Gradle share a common approach of extending the build through plugins. Although the plugin systems are very different beneath the surface, they share many feature-based plugins, such as:</p> 
-     </div> 
-     <div class="ulist"> 
-      <ul> 
-       <li> <p>Shade/Shadow</p> </li> 
-       <li> <p>Jetty</p> </li> 
-       <li> <p>Checkstyle</p> </li> 
-       <li> <p>JaCoCo</p> </li> 
-       <li> <p>AntRun (see further down)</p> </li> 
-      </ul> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Why does this matter? Because many plugins rely on standard Java conventions, so migration is just a matter of replicating the configuration of the Maven plugin in Gradle. As an example, here’s a simple Maven Checkstyle plugin configuration:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="xml">...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the above example, I&#8217;m assuming that the integration tests run against an application server that needs to be started and shut down at the appropriate times. You can learn more about how and what to configure on the <code>Test</code> task in Gradle&#8217;s <a href="https://docs.gradle.org/3.5/dsl/org.gradle.api.tasks.testing.Test.html">DSL Reference</a>.</p>
+</div>
+<div class="paragraph">
+<p>All that&#8217;s left to do at this point is incorporate the <code>integTest</code> task into your task graph, for example by having <code>build</code> depend on it. It&#8217;s really up to you how you fit it into the build. If you want to support other test types, just rinse and repeat.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="common_plugins"><a class="anchor" href="#common_plugins"></a>8. Common plugins</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Maven and Gradle share a common approach of extending the build through plugins. Although the plugin systems are very different beneath the surface, they share many feature-based plugins, such as:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Shade/Shadow</p>
+</li>
+<li>
+<p>Jetty</p>
+</li>
+<li>
+<p>Checkstyle</p>
+</li>
+<li>
+<p>JaCoCo</p>
+</li>
+<li>
+<p>AntRun (see further down)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Why does this matter? Because many plugins rely on standard Java conventions, so migration is just a matter of replicating the configuration of the Maven plugin in Gradle. As an example, here&#8217;s a simple Maven Checkstyle plugin configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="xml">...
 <span class="tag">&lt;plugin&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/groupId&gt;</span>
   <span class="tag">&lt;artifactId&gt;</span>maven-checkstyle-plugin<span class="tag">&lt;/artifactId&gt;</span>
@@ -407,105 +437,109 @@ configurations {
     <span class="tag">&lt;/execution&gt;</span>
   <span class="tag">&lt;/executions&gt;</span>
 <span class="tag">&lt;/plugin&gt;</span>
-...</code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Everything outside of the configuration block can safely be ignored when migrating to Gradle. In this case, the corresponding Gradle configuration looks like the following:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="groovy">checkstyle {
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Everything outside of the configuration block can safely be ignored when migrating to Gradle. In this case, the corresponding Gradle configuration looks like the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">checkstyle {
     config = resources.text.fromFile(<span class="string"><span class="delimiter">'</span><span class="content">checkstyle.xml</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">UTF-8</span><span class="delimiter">'</span></span>)
     showViolations = <span class="predefined-constant">true</span>
     ignoreFailures = <span class="predefined-constant">false</span>
-}</code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>The Checkstyle tasks are automatically added as dependencies of the <code>check</code> task, which also includes <code>test</code>. If you want to ensure that Checkstyle runs before the tests, then just specify an ordering with the mustRunAfter() method:</p> 
-     </div> 
-     <div class="listingblock"> 
-      <div class="content"> 
-       <pre class="CodeRay highlight"><code data-lang="groovy">test.mustRunAfter checkstyleMain, checkstyleTest</code></pre> 
-      </div> 
-     </div> 
-     <div class="paragraph"> 
-      <p>As you can see, the Gradle configuration is often much shorter than the Maven equivalent. You also have a much more flexible execution model since we are not longer constrained by Maven’s fixed phases.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>While migrating a project from Maven, don’t forget about source sets. These often provide a more elegant solution for handling integration tests or generated sources than Maven can provide, so you should factor them into your migration plans.</p> 
-     </div> 
-     <div class="sect2"> 
-      <h3 id="ant_goals"><a class="anchor" href="#ant_goals"></a>8.1. Ant goals</h3> 
-      <div class="paragraph"> 
-       <p>Many Maven builds rely on the AntRun plugin to customize the build without the overhead of implementing a custom Maven plugin. Gradle has no equivalent plugin because Ant is a first-class citizen in Gradle builds, via the <code>ant</code> object. For example, you can use Ant’s Echo task like this:</p> 
-      </div> 
-      <div class="listingblock"> 
-       <div class="content"> 
-        <pre class="CodeRay highlight"><code data-lang="groovy">task sayHello {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The Checkstyle tasks are automatically added as dependencies of the <code>check</code> task, which also includes <code>test</code>. If you want to ensure that Checkstyle runs before the tests, then just specify an ordering with the mustRunAfter() method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">test.mustRunAfter checkstyleMain, checkstyleTest</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As you can see, the Gradle configuration is often much shorter than the Maven equivalent. You also have a much more flexible execution model since we are not longer constrained by Maven&#8217;s fixed phases.</p>
+</div>
+<div class="paragraph">
+<p>While migrating a project from Maven, don&#8217;t forget about source sets. These often provide a more elegant solution for handling integration tests or generated sources than Maven can provide, so you should factor them into your migration plans.</p>
+</div>
+<div class="sect2">
+<h3 id="ant_goals"><a class="anchor" href="#ant_goals"></a>8.1. Ant goals</h3>
+<div class="paragraph">
+<p>Many Maven builds rely on the AntRun plugin to customize the build without the overhead of implementing a custom Maven plugin. Gradle has no equivalent plugin because Ant is a first-class citizen in Gradle builds, via the <code>ant</code> object. For example, you can use Ant&#8217;s Echo task like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">task sayHello {
     doLast {
         ant.echo <span class="key">message</span>: <span class="string"><span class="delimiter">'</span><span class="content">Hello!</span><span class="delimiter">'</span></span>
     }
-}</code></pre> 
-       </div> 
-      </div> 
-      <div class="paragraph"> 
-       <p>Even Ant properties and filesets are supported natively. To learn more, check out the <a href="https://docs.gradle.org/3.4/userguide/ant.html">Ant chapter</a> of the user guide.</p> 
-      </div> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="plugins_you_don_t_need"><a class="anchor" href="#plugins_you_don_t_need"></a>9. Plugins you don’t need</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>It’s worth remembering that Gradle builds are typically easier to extend and customize than Maven. In this context, that means you may not need a Gradle plugin to replace a Maven one. For example, the Maven Enforcer plugin allows you to control dependency versions and environmental factors, but these things can easily be configured in a normal Gradle build script.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="uncommon_and_custom_plugins"><a class="anchor" href="#uncommon_and_custom_plugins"></a>10. Uncommon and custom plugins</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>You may come across Maven plugins that have no counterpart in Gradle, particularly if you or someone in your organisation has written a custom plugin. Such cases rely on you understanding how Gradle (and potentially Maven) works, because you will usually have to write your own plugin.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>For the purposes of migration, there are two key types of Maven plugin:</p> 
-     </div> 
-     <div class="ulist"> 
-      <ul> 
-       <li> <p>Those that use the Maven project object.</p> </li> 
-       <li> <p>Those that don’t.</p> </li> 
-      </ul> 
-     </div> 
-     <div class="paragraph"> 
-      <p>Why is this important? Because if you use one of the latter, you can trivially reimplement it as a Gradle task. Simply define task inputs and outputs to correspond to the mojo parameters and convert the execution logic into a task action.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>If a plugin depends on the Maven project, then you will have to rewrite it. Don’t start by considering how the Maven plugin works, but look at what problem it is trying to solve. Then try to work out how to solve that problem in Gradle. You’ll probably find that the two build models are different enough that "transcribing" Maven plugin code into a Gradle plugin just won’t be effective. On the plus side, the plugin is likely to be much easier to write than the original Maven one because Gradle has a much richer build model.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>If you do need to implement custom logic, either via build files or plugins, then be sure to familiarize yourself with Gradle’s <a href="https://docs.gradle.org/3.4/dsl/">DSL Reference</a>, which provides comprehensive documentation on the API that you’ll be working with. It details the standard configuration blocks (and the objects that back them), the core types in the system (<code>Project</code>, <code>Task</code>, etc.), and the standard set of tasks. The main entry point is the <code>Project</code> interface as that’s the top-level object that backs the build files.</p> 
-     </div> 
-    </div> 
-   </div> 
-   <div class="sect1"> 
-    <h2 id="conclusion"><a class="anchor" href="#conclusion"></a>11. Conclusion</h2> 
-    <div class="sectionbody"> 
-     <div class="paragraph"> 
-      <p>At this point, you should have a rough idea of how much work a migration is likely to be. Those that fit the standard Maven pattern without many extra plugins should be very straightforward to migrate. Builds that utilize common plugins involve a bit more work, but mostly consist of working out how to configure the Gradle equivalents.</p> 
-     </div> 
-     <div class="paragraph"> 
-      <p>More complex builds will require an in-depth understanding of Gradle before the migration takes place. If that’s the case, though, remember that we believe the resulting Gradle build will make more sense and be easier to maintain than the Maven one, and grow better with your changing requirements. In other words, the investment is worth it.</p> 
-     </div> 
-    </div> 
-   </div> 
-  </div> 
-  <div id="footer"> 
-   <div id="footer-text">
-     Last updated 2017-05-30 15:41:42 UTC 
-   </div> 
-  </div>  
- </body>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Even Ant properties and filesets are supported natively. To learn more, check out the <a href="https://docs.gradle.org/3.5/userguide/ant.html">Ant chapter</a> of the user guide.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="plugins_you_don_t_need"><a class="anchor" href="#plugins_you_don_t_need"></a>9. Plugins you don&#8217;t need</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It&#8217;s worth remembering that Gradle builds are typically easier to extend and customize than Maven. In this context, that means you may not need a Gradle plugin to replace a Maven one. For example, the Maven Enforcer plugin allows you to control dependency versions and environmental factors, but these things can easily be configured in a normal Gradle build script.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="uncommon_and_custom_plugins"><a class="anchor" href="#uncommon_and_custom_plugins"></a>10. Uncommon and custom plugins</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You may come across Maven plugins that have no counterpart in Gradle, particularly if you or someone in your organisation has written a custom plugin. Such cases rely on you understanding how Gradle (and potentially Maven) works, because you will usually have to write your own plugin.</p>
+</div>
+<div class="paragraph">
+<p>For the purposes of migration, there are two key types of Maven plugin:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Those that use the Maven project object.</p>
+</li>
+<li>
+<p>Those that don&#8217;t.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Why is this important? Because if you use one of the latter, you can trivially reimplement it as a Gradle task. Simply define task inputs and outputs to correspond to the mojo parameters and convert the execution logic into a task action.</p>
+</div>
+<div class="paragraph">
+<p>If a plugin depends on the Maven project, then you will have to rewrite it. Don&#8217;t start by considering how the Maven plugin works, but look at what problem it is trying to solve. Then try to work out how to solve that problem in Gradle. You&#8217;ll probably find that the two build models are different enough that "transcribing" Maven plugin code into a Gradle plugin just won&#8217;t be effective. On the plus side, the plugin is likely to be much easier to write than the original Maven one because Gradle has a much richer build model.</p>
+</div>
+<div class="paragraph">
+<p>If you do need to implement custom logic, either via build files or plugins, then be sure to familiarize yourself with Gradle&#8217;s <a href="https://docs.gradle.org/3.5/dsl/">DSL Reference</a>, which provides comprehensive documentation on the API that you&#8217;ll be working with. It details the standard configuration blocks (and the objects that back them), the core types in the system (<code>Project</code>, <code>Task</code>, etc.), and the standard set of tasks. The main entry point is the <code>Project</code> interface as that&#8217;s the top-level object that backs the build files.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="conclusion"><a class="anchor" href="#conclusion"></a>11. Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>At this point, you should have a rough idea of how much work a migration is likely to be. Those that fit the standard Maven pattern without many extra plugins should be very straightforward to migrate. Builds that utilize common plugins involve a bit more work, but mostly consist of working out how to configure the Gradle equivalents.</p>
+</div>
+<div class="paragraph">
+<p>More complex builds will require an in-depth understanding of Gradle before the migration takes place. If that&#8217;s the case, though, remember that we believe the resulting Gradle build will make more sense and be easier to maintain than the Maven one, and grow better with your changing requirements. In other words, the investment is worth it.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2017-06-12 19:35:19 UTC
+</div>
+</div>
+</body>
 </html>
