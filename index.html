@@ -110,7 +110,7 @@
 </ul>
 </div>
 <div class="paragraph">
-<p>Some of these can be handled without too much trouble and we&#8217;ll be discussing potential solutions later. Solutions that are often much more straightforward and easier to be used and maintained by the developers.</p>
+<p>Some of these can be handled without too much trouble and we&#8217;ll be discussing potential solutions later. These solutions are often much more straightforward and easier to be used and maintained by the developers.</p>
 </div>
 <div class="paragraph">
 <p>Once you&#8217;ve decided to go ahead with the migration, what should you do next? The best starting point is setting up a mechanism to validate your new build.</p>
@@ -140,7 +140,7 @@
 <div class="paragraph">
 <p>Not only will the Gradle <code>init</code> task allow you to create a new skeleton project, but it will also automatically convert an existing Maven one to Gradle. All you have to do is run the command</p>
 </div>
-<div class="listingblock">
+<div class="listingblock terminal">
 <div class="content">
 <pre>$ gradle init</pre>
 </div>
@@ -149,7 +149,7 @@
 <p>from the root project directory and let Gradle do its thing. That basically consists of parsing the existing POMs and generating corresponding Gradle build files plus a <code>settings.gradle</code> file if it&#8217;s a multi-project build.</p>
 </div>
 <div class="paragraph">
-<p>You&#8217;ll find that the new Gradle build includes any custom repositories specified in the POM, your external and inter-project dependencies, the appropriate plugins (any of <code>maven</code>, <code>java</code>, and <code>war</code>), and more. See the user guide for <a href="https://docs.gradle.org/3.5/userguide/build_init_plugin.html#sec:pom_maven_conversion_">a complete list of the automatic conversion features</a>.</p>
+<p>You&#8217;ll find that the new Gradle build includes any custom repositories specified in the POM, your external and inter-project dependencies, the appropriate plugins (any of <code>maven</code>, <code>java</code>, and <code>war</code>), and more. See the user guide for <a href="https://docs.gradle.org/4.0/userguide/build_init_plugin.html#sec:pom_maven_conversion_">a complete list of the automatic conversion features</a>.</p>
 </div>
 <div class="paragraph">
 <p>One thing to bear in mind is that assemblies are not automatically converted. They aren&#8217;t necessarily problematic to convert, but you will need to do some manual work.</p>
@@ -157,7 +157,7 @@
 <div class="paragraph">
 <p>If you&#8217;re lucky and don&#8217;t have many plugins or much in the way of customisation in your Maven build, you can simply run</p>
 </div>
-<div class="listingblock">
+<div class="listingblock terminal">
 <div class="content">
 <pre>$ gradle build</pre>
 </div>
@@ -185,20 +185,50 @@
 <p>Once in place, you&#8217;ll be able to import a BOM into your build file using the following syntax:</p>
 </div>
 <div class="listingblock">
+<div class="title">build.gradle</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">dependencyManagement {
-    imports {
-        mavenBom <span class="string"><span class="delimiter">'</span><span class="content">io.spring.platform:platform-bom:1.0.1.RELEASE</span><span class="delimiter">'</span></span>
-    }
+<pre class="CodeRay highlight"><code data-lang="groovy">plugins {
+    id <span class="string"><span class="delimiter">'</span><span class="content">nebula.dependency-recommender</span><span class="delimiter">'</span></span> version <span class="string"><span class="delimiter">'</span><span class="content">4.1.2</span><span class="delimiter">'</span></span>
+    id <span class="string"><span class="delimiter">'</span><span class="content">java</span><span class="delimiter">'</span></span>
+}
+
+repositories {
+    jcenter()
+}
+
+dependencyRecommendations {
+    mavenBom <span class="key">module</span>: <span class="string"><span class="delimiter">'</span><span class="content">io.spring.platform:platform-bom:1.0.1.RELEASE</span><span class="delimiter">'</span></span>
 }
 
 dependencies {
-   compile <span class="string"><span class="delimiter">'</span><span class="content">org.springframework.integration:spring-integration-core</span><span class="delimiter">'</span></span>
+    implementation <span class="string"><span class="delimiter">'</span><span class="content">org.springframework.integration:spring-integration-core</span><span class="delimiter">'</span></span> <i class="conum" data-value="1"></i><b>(1)</b>
+    implementation <span class="string"><span class="delimiter">'</span><span class="content">commons-lang:commons-lang:2.6</span><span class="delimiter">'</span></span> <i class="conum" data-value="2"></i><b>(2)</b>
 }</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p><strong>Note:</strong> Gradle doesn&#8217;t support the <code>import</code> scope in the POMs of dependencies, so you&#8217;ll have to manually import them using the above syntax.</p>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Recommend a version for this artifact</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Do not recommend a version for this artifact.</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Gradle doesn&#8217;t support the <code>import</code> scope in the POMs of dependencies, so you&#8217;ll have to manually import them using the above syntax.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -207,22 +237,31 @@ dependencies {
 <p>Gradle has a lot of flexibility in the way that dependencies are managed, particularly through configurations. However, it doesn&#8217;t have a scope named <code>provided</code> out of the box unless you use the <code>war</code> plugin. The same basic behavior can be had from the <a href="https://blog.gradle.org/introducing-compile-only-dependencies">compileOnly</a> configuration added in Gradle 2.12.</p>
 </div>
 <div class="paragraph">
-<p>If you need optional-like behavior or you&#8217;re using an older version of Gradle than 2.12, it is very easy to model these concepts in Gradle and various members of the community have produced plugins that do just that. Two well-used ones are Netflix&#8217;s Nebula <a href="https://plugins.gradle.org/plugin/nebula.provided-base">provided-base</a> and <a href="https://plugins.gradle.org/plugin/nebula.optional-base">optional-base</a> plugins. You can apply and use them like this:</p>
+<p>If you need optional-like behavior you can use the <a href="https://plugins.gradle.org/plugin/nebula.optional-base">optional-base</a> plugin from Netflix. You can apply and use these configurations like this:</p>
 </div>
 <div class="listingblock">
+<div class="title">build.gradle</div>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">plugins {
-    id <span class="string"><span class="delimiter">'</span><span class="content">nebula.provided-base</span><span class="delimiter">'</span></span> version <span class="string"><span class="delimiter">'</span><span class="content">2.2.2</span><span class="delimiter">'</span></span>
-    id <span class="string"><span class="delimiter">'</span><span class="content">nebula.optional-base</span><span class="delimiter">'</span></span> version <span class="string"><span class="delimiter">'</span><span class="content">2.2.2</span><span class="delimiter">'</span></span>
+    id <span class="string"><span class="delimiter">'</span><span class="content">java</span><span class="delimiter">'</span></span>
+    id <span class="string"><span class="delimiter">'</span><span class="content">nebula.optional-base</span><span class="delimiter">'</span></span> version <span class="string"><span class="delimiter">'</span><span class="content">3.2.0</span><span class="delimiter">'</span></span>
 }
 
 dependencies {
-    provided <span class="string"><span class="delimiter">'</span><span class="content">org.apache.commons:commons-lang3:3.3.2</span><span class="delimiter">'</span></span>
-    provided <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">version</span>: <span class="string"><span class="delimiter">'</span><span class="content">1.2.17</span><span class="delimiter">'</span></span>
-    compile <span class="string"><span class="delimiter">'</span><span class="content">org.apache.commons:commons-lang3:3.3.2</span><span class="delimiter">'</span></span>, optional
-    compile <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">version</span>: <span class="string"><span class="delimiter">'</span><span class="content">1.2.17</span><span class="delimiter">'</span></span>, optional
+    compileOnly <span class="string"><span class="delimiter">'</span><span class="content">org.apache.commons:commons-lang3:3.3.2</span><span class="delimiter">'</span></span>  <i class="conum" data-value="1"></i><b>(1)</b>
+    compileOnly <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">version</span>: <span class="string"><span class="delimiter">'</span><span class="content">1.2.17</span><span class="delimiter">'</span></span>
+    optional <span class="string"><span class="delimiter">'</span><span class="content">org.apache.commons:commons-lang3:3.3.2</span><span class="delimiter">'</span></span>
+    optional <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">log4j</span><span class="delimiter">'</span></span>, <span class="key">version</span>: <span class="string"><span class="delimiter">'</span><span class="content">1.2.17</span><span class="delimiter">'</span></span>
 }</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Use <code>compileOnly</code> instead of <code>provided</code>.</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>They also work with the new, preferred publishing mechanism, which is something that you would have to handle yourself if you wanted to implement your own configurations.</p>
@@ -253,7 +292,7 @@ dependencies {
 </ul>
 </div>
 <div class="paragraph">
-<p>Those aren&#8217;t the only options, so if you are interested in finding out more about how and where you can define properties, <a href="https://docs.gradle.org/3.5/userguide/build_environment.html">check out the user guide</a>. Unlike with Maven, we recommend using camel case for your property names rather than dot-separated words.</p>
+<p>Those aren&#8217;t the only options, so if you are interested in finding out more about how and where you can define properties, <a href="https://docs.gradle.org/4.0/userguide/build_environment.html">check out the user guide</a>. Unlike with Maven, we recommend using camel case for your property names rather than dot-separated words.</p>
 </div>
 <div class="paragraph">
 <p>One important piece of behavior you need to be aware of is what happens when the same property is defined in both the build file and one of the external properties files: the build file value takes precedence. Always. Fortunately, you can mimic the concept of profiles to provide overridable default values.</p>
@@ -273,7 +312,7 @@ apply <span class="key">from</span>: <span class="string"><span class="delimiter
 <div class="paragraph">
 <p>All you have to do then is put the environment-specific configuration, such as project properties, dependencies, etc., in the corresponding build file. To activate a particular profile, you can just pass in the relevant project property on the command line:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock terminal">
 <div class="content">
 <pre>$ gradle -PbuildProfile=test build</pre>
 </div>
@@ -299,6 +338,7 @@ apply <span class="key">from</span>: <span class="string"><span class="delimiter
 <p>The Java plugin for Gradle provides a <code>processResources</code> task to do the same thing. Here&#8217;s an example configuration:</p>
 </div>
 <div class="listingblock">
+<div class="title">build.gradle</div>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">processResources {
     expand(<span class="key">version</span>: version, <span class="key">buildNumber</span>: currentBuildNumber)
@@ -309,7 +349,7 @@ apply <span class="key">from</span>: <span class="string"><span class="delimiter
 <p>So the left hand side of each colon is the token name and the right hand side is a project property. This variable substitution will apply to all your resource files (the ones under <code>src/main/resources</code> usually).</p>
 </div>
 <div class="paragraph">
-<p>Gradle has other powerful ways for property processing. You can hook in your own filter via a closure that allows you to process the content line by line, or you can add your own <code>FilterReader</code> implementation. For more details, see the documentation for the <a href="https://docs.gradle.org/3.5/javadoc/org/gradle/api/file/ContentFilterable.html">ContentFilterable</a> interface which all copy (and archive) tasks, including <code>processResources</code>, implement.</p>
+<p>Gradle has other powerful ways for property processing. You can hook in your own filter via a closure that allows you to process the content line by line, or you can add your own <code>FilterReader</code> implementation. For more details, see the documentation for the <a href="https://docs.gradle.org/4.0/javadoc/org/gradle/api/file/ContentFilterable.html">ContentFilterable</a> interface which all copy (and archive) tasks, including <code>processResources</code>, implement.</p>
 </div>
 </div>
 </div>
@@ -335,6 +375,7 @@ apply <span class="key">from</span>: <span class="string"><span class="delimiter
 <p>Let&#8217;s now take a look at an example so you can see what&#8217;s involved in practice:</p>
 </div>
 <div class="listingblock">
+<div class="title">build.gradle</div>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">sourceSets {
     integTest {
@@ -355,13 +396,14 @@ configurations {
 <p>Your integration tests will probably use some third party libraries of their own, so you&#8217;ll want to add those the compilation classpath too. That&#8217;s done in the normal way in the <code>dependencies</code> block:</p>
 </div>
 <div class="listingblock">
+<div class="title">build.gradle</div>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">dependencies {
-   <span class="comment">// ...</span>
-   integTestCompile <span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all:2.4.3</span><span class="delimiter">'</span></span>
-   integTestCompile <span class="string"><span class="delimiter">'</span><span class="content">org.spockframework:spock-core:0.7-groovy-2.0</span><span class="delimiter">'</span></span>, {
-      exclude <span class="key">module</span>: <span class="string"><span class="delimiter">'</span><span class="content">groovy-all</span><span class="delimiter">'</span></span>
-   }
+    <span class="comment">// ...</span>
+    integTestCompile <span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all:2.4.3</span><span class="delimiter">'</span></span>
+    integTestCompile <span class="string"><span class="delimiter">'</span><span class="content">org.spockframework:spock-core:0.7-groovy-2.0</span><span class="delimiter">'</span></span>, {
+        exclude <span class="key">module</span>: <span class="string"><span class="delimiter">'</span><span class="content">groovy-all</span><span class="delimiter">'</span></span>
+    }
 }</code></pre>
 </div>
 </div>
@@ -369,6 +411,7 @@ configurations {
 <p>The integration tests will now compile, but there is currently no way to run them. That&#8217;s where the custom <code>Test</code> task comes in:</p>
 </div>
 <div class="listingblock">
+<div class="title">build.gradle</div>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">task integTest(<span class="key">type</span>: Test) {
     dependsOn startApp
@@ -380,7 +423,7 @@ configurations {
 </div>
 </div>
 <div class="paragraph">
-<p>In the above example, I&#8217;m assuming that the integration tests run against an application server that needs to be started and shut down at the appropriate times. You can learn more about how and what to configure on the <code>Test</code> task in Gradle&#8217;s <a href="https://docs.gradle.org/3.5/dsl/org.gradle.api.tasks.testing.Test.html">DSL Reference</a>.</p>
+<p>In the above example, I&#8217;m assuming that the integration tests run against an application server that needs to be started and shut down at the appropriate times. You can learn more about how and what to configure on the <code>Test</code> task in Gradle&#8217;s <a href="https://docs.gradle.org/4.0/dsl/org.gradle.api.tasks.testing.Test.html">DSL Reference</a>.</p>
 </div>
 <div class="paragraph">
 <p>All that&#8217;s left to do at this point is incorporate the <code>integTest</code> task into your task graph, for example by having <code>build</code> depend on it. It&#8217;s really up to you how you fit it into the build. If you want to support other test types, just rinse and repeat.</p>
@@ -483,7 +526,7 @@ configurations {
 </div>
 </div>
 <div class="paragraph">
-<p>Even Ant properties and filesets are supported natively. To learn more, check out the <a href="https://docs.gradle.org/3.5/userguide/ant.html">Ant chapter</a> of the user guide.</p>
+<p>Even Ant properties and filesets are supported natively. To learn more, check out the <a href="https://docs.gradle.org/4.0/userguide/ant.html">Ant chapter</a> of the user guide.</p>
 </div>
 </div>
 </div>
@@ -522,7 +565,7 @@ configurations {
 <p>If a plugin depends on the Maven project, then you will have to rewrite it. Don&#8217;t start by considering how the Maven plugin works, but look at what problem it is trying to solve. Then try to work out how to solve that problem in Gradle. You&#8217;ll probably find that the two build models are different enough that "transcribing" Maven plugin code into a Gradle plugin just won&#8217;t be effective. On the plus side, the plugin is likely to be much easier to write than the original Maven one because Gradle has a much richer build model.</p>
 </div>
 <div class="paragraph">
-<p>If you do need to implement custom logic, either via build files or plugins, then be sure to familiarize yourself with Gradle&#8217;s <a href="https://docs.gradle.org/3.5/dsl/">DSL Reference</a>, which provides comprehensive documentation on the API that you&#8217;ll be working with. It details the standard configuration blocks (and the objects that back them), the core types in the system (<code>Project</code>, <code>Task</code>, etc.), and the standard set of tasks. The main entry point is the <code>Project</code> interface as that&#8217;s the top-level object that backs the build files.</p>
+<p>If you do need to implement custom logic, either via build files or plugins, then be sure to familiarize yourself with Gradle&#8217;s <a href="https://docs.gradle.org/4.0/dsl/">DSL Reference</a>, which provides comprehensive documentation on the API that you&#8217;ll be working with. It details the standard configuration blocks (and the objects that back them), the core types in the system (<code>Project</code>, <code>Task</code>, etc.), and the standard set of tasks. The main entry point is the <code>Project</code> interface as that&#8217;s the top-level object that backs the build files.</p>
 </div>
 </div>
 </div>
@@ -548,7 +591,7 @@ configurations {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-07-07 08:07:09 UTC
+Last updated 2017-07-27 14:44:25 UTC
 </div>
 </div>
 </body>
