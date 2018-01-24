@@ -3,7 +3,7 @@
 <head><link crossorigin href="//assets.gradle.com" rel="preconnect">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,400i">
 <link rel="stylesheet" href="https://guides.gradle.org/css/asciidoctor.css">
-<link rel="stylesheet" href="https://guides.gradle.org/css/docs-blue-theme.css">
+<link rel="stylesheet" href="https://guides.gradle.org/css/docs-blue-theme-4.5.2.css">
 <link rel="apple-touch-icon" sizes="180x180" href="https://guides.gradle.org/icon/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="https://guides.gradle.org/icon/favicon-32x32.png" sizes="32x32">
 <link rel="icon" type="image/png" href="https://guides.gradle.org/icon/favicon-16x16.png" sizes="16x16">
@@ -189,7 +189,7 @@
 <p>from the root project directory and let Gradle do its thing. That basically consists of parsing the existing POMs and generating corresponding Gradle build files plus a <code>settings.gradle</code> file if it&#8217;s a multi-project build.</p>
 </div>
 <div class="paragraph">
-<p>You&#8217;ll find that the new Gradle build includes any custom repositories specified in the POM, your external and inter-project dependencies, the appropriate plugins (any of <code>maven</code>, <code>java</code>, and <code>war</code>), and more. See the user guide for <a href="https://docs.gradle.org/4.4.1/userguide/build_init_plugin.html#sec:pom_maven_conversion_">a complete list of the automatic conversion features</a>.</p>
+<p>You&#8217;ll find that the new Gradle build includes any custom repositories specified in the POM, your external and inter-project dependencies, the appropriate plugins (any of <code>maven</code>, <code>java</code>, and <code>war</code>), and more. See the user guide for <a href="https://docs.gradle.org/4.5/userguide/build_init_plugin.html#sec:pom_maven_conversion_">a complete list of the automatic conversion features</a>.</p>
 </div>
 <div class="paragraph">
 <p>One thing to bear in mind is that assemblies are not automatically converted. They aren&#8217;t necessarily problematic to convert, but you will need to do some manual work.</p>
@@ -332,7 +332,7 @@ dependencies {
 </ul>
 </div>
 <div class="paragraph">
-<p>Those aren&#8217;t the only options, so if you are interested in finding out more about how and where you can define properties, <a href="https://docs.gradle.org/4.4.1/userguide/build_environment.html">check out the user guide</a>. Unlike with Maven, we recommend using camel case for your property names rather than dot-separated words.</p>
+<p>Those aren&#8217;t the only options, so if you are interested in finding out more about how and where you can define properties, <a href="https://docs.gradle.org/4.5/userguide/build_environment.html">check out the user guide</a>. Unlike with Maven, we recommend using camel case for your property names rather than dot-separated words.</p>
 </div>
 <div class="paragraph">
 <p>One important piece of behavior you need to be aware of is what happens when the same property is defined in both the build file and one of the external properties files: the build file value takes precedence. Always. Fortunately, you can mimic the concept of profiles to provide overridable default values.</p>
@@ -389,7 +389,7 @@ apply <span class="key">from</span>: <span class="string"><span class="delimiter
 <p>So the left hand side of each colon is the token name and the right hand side is a project property. This variable substitution will apply to all your resource files (the ones under <code>src/main/resources</code> usually).</p>
 </div>
 <div class="paragraph">
-<p>Gradle has other powerful ways for property processing. You can hook in your own filter via a closure that allows you to process the content line by line, or you can add your own <code>FilterReader</code> implementation. For more details, see the documentation for the <a href="https://docs.gradle.org/4.4.1/javadoc/org/gradle/api/file/ContentFilterable.html">ContentFilterable</a> interface which all copy (and archive) tasks, including <code>processResources</code>, implement.</p>
+<p>Gradle has other powerful ways for property processing. You can hook in your own filter via a closure that allows you to process the content line by line, or you can add your own <code>FilterReader</code> implementation. For more details, see the documentation for the <a href="https://docs.gradle.org/4.5/javadoc/org/gradle/api/file/ContentFilterable.html">ContentFilterable</a> interface which all copy (and archive) tasks, including <code>processResources</code>, implement.</p>
 </div>
 </div>
 </div>
@@ -463,7 +463,7 @@ configurations {
 </div>
 </div>
 <div class="paragraph">
-<p>In the above example, I&#8217;m assuming that the integration tests run against an application server that needs to be started and shut down at the appropriate times. You can learn more about how and what to configure on the <code>Test</code> task in Gradle&#8217;s <a href="https://docs.gradle.org/4.4.1/dsl/org.gradle.api.tasks.testing.Test.html">DSL Reference</a>.</p>
+<p>In the above example, I&#8217;m assuming that the integration tests run against an application server that needs to be started and shut down at the appropriate times. You can learn more about how and what to configure on the <code>Test</code> task in Gradle&#8217;s <a href="https://docs.gradle.org/4.5/dsl/org.gradle.api.tasks.testing.Test.html">DSL Reference</a>.</p>
 </div>
 <div class="paragraph">
 <p>All that&#8217;s left to do at this point is incorporate the <code>integTest</code> task into your task graph, for example by having <code>build</code> depend on it. It&#8217;s really up to you how you fit it into the build. If you want to support other test types, just rinse and repeat.</p>
@@ -566,7 +566,7 @@ configurations {
 </div>
 </div>
 <div class="paragraph">
-<p>Even Ant properties and filesets are supported natively. To learn more, check out the <a href="https://docs.gradle.org/4.4.1/userguide/ant.html">Ant chapter</a> of the user guide.</p>
+<p>Even Ant properties and filesets are supported natively. To learn more, check out the <a href="https://docs.gradle.org/4.5/userguide/ant.html">Ant chapter</a> of the user guide.</p>
 </div>
 </div>
 </div>
@@ -605,7 +605,7 @@ configurations {
 <p>If a plugin depends on the Maven project, then you will have to rewrite it. Don&#8217;t start by considering how the Maven plugin works, but look at what problem it is trying to solve. Then try to work out how to solve that problem in Gradle. You&#8217;ll probably find that the two build models are different enough that "transcribing" Maven plugin code into a Gradle plugin just won&#8217;t be effective. On the plus side, the plugin is likely to be much easier to write than the original Maven one because Gradle has a much richer build model.</p>
 </div>
 <div class="paragraph">
-<p>If you do need to implement custom logic, either via build files or plugins, then be sure to familiarize yourself with Gradle&#8217;s <a href="https://docs.gradle.org/4.4.1/dsl/">DSL Reference</a>, which provides comprehensive documentation on the API that you&#8217;ll be working with. It details the standard configuration blocks (and the objects that back them), the core types in the system (<code>Project</code>, <code>Task</code>, etc.), and the standard set of tasks. The main entry point is the <code>Project</code> interface as that&#8217;s the top-level object that backs the build files.</p>
+<p>If you do need to implement custom logic, either via build files or plugins, then be sure to familiarize yourself with Gradle&#8217;s <a href="https://docs.gradle.org/4.5/dsl/">DSL Reference</a>, which provides comprehensive documentation on the API that you&#8217;ll be working with. It details the standard configuration blocks (and the objects that back them), the core types in the system (<code>Project</code>, <code>Task</code>, etc.), and the standard set of tasks. The main entry point is the <code>Project</code> interface as that&#8217;s the top-level object that backs the build files.</p>
 </div>
 </div>
 </div>
