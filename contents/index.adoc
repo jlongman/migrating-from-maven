@@ -102,7 +102,7 @@ They also work with the new, preferred publishing mechanism, which is something 
 
 == Maven profiles and properties
 
-Maven allows you parameterize builds using properties of various sorts. Some are read-only properties of the project model, others are user-defined in the POM. It even allows you to treat system properties as project properties.
+Maven allows you to parameterize builds using properties of various sorts. Some are read-only properties of the project model, others are user-defined in the POM. It even allows you to treat system properties as project properties.
 
 Gradle has a similar system of project properties, although it differentiates between those and system properties. You can, for example, define properties in:
 
